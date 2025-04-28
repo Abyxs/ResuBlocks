@@ -419,7 +419,7 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
           continue;
         }
 
-        const element = pageRef.querySelector('.resume-a4');
+        const element = pageRef.querySelector('.a4-page');
         if (!element) {
           console.warn(`无法找到页面 ${i + 1} 的简历内容区域`);
           continue;
@@ -451,17 +451,30 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
           padding: ${page.margins?.top || 0}mm ${page.margins?.right || 0}mm ${page.margins?.bottom || 0}mm ${page.margins?.left || 0}mm !important;
           background-color: ${page.backgroundColor || '#ffffff'} !important;
           box-sizing: border-box !important;
-          position: absolute !important;
+          position: relative !important;
           top: 0 !important;
           left: 0 !important;
           transform: none !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
+          overflow: hidden !important;
         `;
+        
+        // 确保所有组件在导出时位置正确
+        const componentElements = clone.querySelectorAll('[data-component-id]');
+        componentElements.forEach(componentEl => {
+          componentEl.style.position = 'absolute';
+          componentEl.style.overflow = 'visible';
+          
+          // 移除拖拽控制按钮，以避免它们出现在导出的PDF中
+          const controlButtons = componentEl.querySelectorAll('.no-drag');
+          controlButtons.forEach(btn => btn.remove());
+        });
+        
         container.appendChild(clone);
 
         // 使用html2canvas渲染
-        const scale = 2;
+        const scale = 3; // 增加缩放比例以提高清晰度
         const canvas = await html2canvas(clone, {
           scale: scale,
           useCORS: true,
@@ -469,17 +482,25 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
           width: pageWidth * 3.78,
           height: pageHeight * 3.78,
           backgroundColor: page.backgroundColor || '#ffffff',
-          imageTimeout: 0,
+          imageTimeout: 3000, // 增加超时时间
           onclone: (clonedDoc) => {
-            const clonedElement = clonedDoc.querySelector('.resume-a4');
+            const clonedElement = clonedDoc.querySelector('.a4-page');
             if (clonedElement) {
               clonedElement.style.transform = 'none';
+              
+              // 确保所有组件在页面内正确显示
+              const components = clonedElement.querySelectorAll('[data-component-id]');
+              components.forEach(comp => {
+                comp.style.position = 'absolute';
+                comp.style.transformOrigin = 'top left';
+                comp.style.transform = 'none';
+              });
             }
           }
         });
 
         // 转换为图片URL
-        const previewUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const previewUrl = canvas.toDataURL('image/jpeg', 0.9); // 提高质量
         pagePreviews.push({
           index: i,
           pageId: page.id,
@@ -534,7 +555,8 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
         orientation: isLandscape ? 'landscape' : 'portrait',
         unit: 'mm',
         format: [pageWidth, pageHeight],
-        hotfixes: ['px_scaling']
+        hotfixes: ['px_scaling'],
+        compress: true // 启用PDF压缩
       });
       
       // 对每个选中的页面进行处理
@@ -552,20 +574,34 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
           pdf.addPage([thisPageWidth, thisPageHeight], thisPageIsLandscape ? 'landscape' : 'portrait');
         }
         
-        // 将图片添加到PDF
+        // 图片质量设置
         const imgData = pagePreview.url;
-        pdf.addImage(imgData, 'JPEG', 0, 0, page.width, page.height, undefined, 'FAST');
+        
+        // 优化图像添加方式，确保内容完整显示
+        pdf.addImage(
+          imgData, 
+          'JPEG', 
+          0, 
+          0, 
+          page.width, 
+          page.height, 
+          undefined, 
+          'FAST',
+          0 // 旋转角度
+        );
       }
       
       // 保存PDF
-      pdf.save(`我的简历_${new Date().toLocaleDateString()}.pdf`);
-      console.log('PDF导出成功');
+      const filename = `我的简历_${new Date().toLocaleDateString().replace(/\//g, '_')}.pdf`;
+      pdf.save(filename);
+      
+      console.log('PDF导出成功:', filename);
       
       // 关闭预览对话框
       setPreviewDialogOpen(false);
     } catch (err) {
       console.error('PDF导出错误:', err);
-      alert('PDF导出失败，请重试');
+      alert('PDF导出失败，请重试: ' + err.message);
     }
   };
 
@@ -704,6 +740,12 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
     
     // 设置当前页面索引 (会触发上面的useEffect)
     setCurrentPageIndex(pageIndex);
+  };
+
+  // 添加组件点击处理函数
+  const handleComponentClick = (componentId) => {
+    // 设置当前打开的组件ID
+    setOpenComponentId(componentId);
   };
 
   return (
@@ -939,14 +981,12 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
             key={page.id}
             ref={(el) => setPageRef(index, el)}
             style={{
-              transform: 'scale(0.75)',
-              transformOrigin: 'top center',
-              backgroundColor: 'white',
+              marginBottom: '30px',
+              position: 'relative',
               boxShadow: index === currentPageIndex ? 
                 '0 0 0 3px #2196F3, 0 5px 15px rgba(0,0,0,0.2)' : 
                 '0 0 10px rgba(0,0,0,0.1)',
-              marginBottom: '30px',
-              position: 'relative'
+              backgroundColor: 'white',
             }}
           > 
             {/* 页面标识 */}
@@ -984,8 +1024,12 @@ const ResumeEditor = ({ defaultSettings, defaultPages, activePageIndex = 0 }) =>
               components={page.components}
               settings={{
                 ...resumeSettings,
-                ...page
+                ...page,
+                previewScale: 0.75
               }}
+              activeComponentId={openComponentId}
+              onComponentClick={handleComponentClick}
+              onUpdateComponent={updateComponent}
             />
           </div>
         ))}
