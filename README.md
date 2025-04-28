@@ -55,7 +55,7 @@
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/Abyxs/resume-generator.git
+   git clone https://github.com/Abyxs/ResuBlocks.git
    cd resume-generator
    ```
 
