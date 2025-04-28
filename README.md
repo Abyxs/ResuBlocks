@@ -56,7 +56,7 @@
 1. **克隆仓库**
    ```bash
    git clone https://github.com/Abyxs/ResuBlocks.git
-   cd resume-generator
+   cd ResuBlocks
    ```
 
 2. **安装依赖**
