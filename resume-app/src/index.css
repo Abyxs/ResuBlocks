@@ -71,6 +71,23 @@ button:focus-visible {
   }
 }
 
+/* 彩色走马灯动画 */
+@keyframes colorfulGlow {
+  0% { outline-color: #ff0000; }
+  16.6% { outline-color: #ffaa00; }
+  33.2% { outline-color: #00ff00; }
+  49.8% { outline-color: #00ffff; }
+  66.4% { outline-color: #0000ff; }
+  83% { outline-color: #aa00ff; }
+  100% { outline-color: #ff0000; }
+}
+
+.colorful-outline {
+  animation: colorfulGlow 3s infinite linear;
+  outline-width: 3px !important;
+  outline-style: solid !important;
+  outline-offset: 2px !important;
+}
 
 @media print {
   @page {
@@ -98,7 +115,7 @@ button:focus-visible {
   }
   
   /* 针对简历主容器 */
-  .resume-a4 {
+  .a4-page {
     margin: 0 !important;
     padding: inherit !important;
     box-shadow: none !important;
