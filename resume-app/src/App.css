@@ -40,3 +40,39 @@
 .read-the-docs {
   color: #888;
 }
+
+
+/* 在现有样式后添加 */
+.a4-page {
+  page-break-after: auto !important;
+  page-break-inside: avoid !important;
+  break-after: auto !important;
+  break-inside: avoid !important;
+  overflow: hidden !important;
+  max-height: 297mm !important; /* A4高度 */
+}
+
+/* 确保打印时不会出现额外页面 */
+@media print {
+  .a4-page {
+    overflow: hidden !important;
+    page-break-after: auto !important;
+    page-break-before: auto !important;
+    page-break-inside: avoid !important;
+    break-after: auto !important;
+    break-before: auto !important;
+    break-inside: avoid !important;
+  }
+  
+  body, html, #root, .App {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    height: auto !important;
+  }
+  
+  /* 防止多余页面 */
+  .resume-preview-container::after {
+    content: none !important;
+  }
+}
