@@ -73,7 +73,7 @@ const PortfolioItemStyleEditor = ({ component, handleContentChange }) => {
             />
           </div>
           
-          {/* 高度输入框部分 */}
+          // 在高度输入框部分，确保高度设置正确
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px' }}>高度 (px):</label>
             <input 
@@ -87,9 +87,10 @@ const PortfolioItemStyleEditor = ({ component, handleContentChange }) => {
                 } else {
                   const height = parseInt(value);
                   if (!isNaN(height) && height >= 0) {
-                    // 确保高度值被正确设置
-                    handlePortfolioItemChange(index, 'height', height);
-                    console.log('设置高度为:', height); // 添加调试日志
+                    // 确保高度值被正确设置，但不要超过页面高度
+                    const safeHeight = Math.min(height, 800); // 设置一个合理的最大值
+                    handlePortfolioItemChange(index, 'height', safeHeight);
+                    console.log('设置高度为:', safeHeight);
                   }
                 }
               }}
