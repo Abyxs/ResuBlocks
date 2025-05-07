@@ -658,20 +658,23 @@ const A4Resume = ({ settings, components = [], activeComponentId, onComponentCli
   };
 
   // 计算内容区域的样式
+  // 修改 containerStyle 对象，确保内容不会溢出并且不会生成额外页面
   const containerStyle = {
     position: 'relative',
     width: pageDimensions.width,
     height: pageDimensions.height,
     backgroundColor: backgroundColor,
     boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-    margin: '0',
+    margin: '0 auto', // 居中显示
     padding: `${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm`,
     boxSizing: 'border-box',
-    overflow: 'visible', // 改为visible以允许组件完全显示
-    pageBreakAfter: 'always',
+    overflow: 'hidden', // 改为hidden以防止内容溢出
+    pageBreakAfter: 'auto', // 修改为auto
     pageBreakInside: 'avoid',
     display: 'block',
-    transformOrigin: 'top left'
+    transformOrigin: 'top left',
+    breakAfter: 'auto', // 添加现代CSS属性
+    breakInside: 'avoid', // 添加现代CSS属性
   };
 
   // 网格背景样式 (仅当有组件被选中时显示)
